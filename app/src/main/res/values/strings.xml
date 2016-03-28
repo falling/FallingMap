@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">FallingMap</string>
+    <string name="permission_error">没有权限无法定位</string>
+</resources>
