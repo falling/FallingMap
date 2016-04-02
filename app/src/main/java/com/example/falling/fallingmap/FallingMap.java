@@ -1,7 +1,6 @@
 package com.example.falling.fallingmap;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
@@ -10,8 +9,9 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.amap.api.location.AMapLocation;
@@ -19,7 +19,6 @@ import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps2d.AMap;
-import com.amap.api.maps2d.CameraUpdateFactory;
 import com.amap.api.maps2d.LocationSource;
 import com.amap.api.maps2d.MapView;
 import com.amap.api.maps2d.UiSettings;
@@ -33,6 +32,7 @@ import com.amap.api.services.route.DrivePath;
 import com.amap.api.services.route.DriveRouteResult;
 import com.amap.api.services.route.RouteSearch;
 import com.amap.api.services.route.WalkRouteResult;
+import com.example.falling.fallingmap.util.StringUtil;
 import com.example.falling.fallingmap.util.ToastUtil;
 
 public class FallingMap extends AppCompatActivity implements LocationSource,
@@ -52,11 +52,18 @@ public class FallingMap extends AppCompatActivity implements LocationSource,
     private LatLonPoint mEndPoint;
 
 
+    private RelativeLayout mBottomLayout;
+    private TextView mRouteTimeDes;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_falling_map);
+
         mapView = (MapView) findViewById(R.id.map);
+        mBottomLayout = (RelativeLayout) findViewById(R.id.bottom_layout);
+        mRouteTimeDes = (TextView) findViewById(R.id.distance);
         if (mapView != null) {
             mapView.onCreate(savedInstanceState);
         }
@@ -95,11 +102,10 @@ public class FallingMap extends AppCompatActivity implements LocationSource,
 
     private void permissionGranted() {
         init();
+        mRouteSearch = new RouteSearch(this);
         mRouteSearch.setRouteSearchListener(this);
         aMap.setLocationSource(this);// 设置定位监听
-        aMap.setOnMapClickListener(this);
-        aMap.getUiSettings().setMyLocationButtonEnabled(true);// 设置默认定位按钮是否显示
-        aMap.setMyLocationEnabled(true);// 设置为true表示显示定位层并可触发定位，false表示隐藏定位层并不可触发定位，默认是false
+        aMap.setOnMapClickListener(this);//设置地图点击监听
     }
 
     /**
@@ -109,9 +115,8 @@ public class FallingMap extends AppCompatActivity implements LocationSource,
         if (aMap == null) {
             aMap = mapView.getMap();
             setUpMap();
-            mUiSettings = aMap.getUiSettings();
-            mUiSettings.setScaleControlsEnabled(true);
-            mRouteSearch = new RouteSearch(this);
+            UiSetting();
+
         }
 
     }
@@ -127,10 +132,19 @@ public class FallingMap extends AppCompatActivity implements LocationSource,
         myLocationStyle.strokeColor(Color.BLACK);// 设置圆形的边框颜色
         myLocationStyle.radiusFillColor(Color.argb(100, 0, 0, 180));// 设置圆形的填充颜色
         myLocationStyle.strokeWidth(1.0f);// 设置圆形的边框粗细
-        aMap.setMyLocationStyle(myLocationStyle);
         aMap.setLocationSource(this);// 设置定位监听
-        aMap.getUiSettings().setMyLocationButtonEnabled(true);// 设置默认定位按钮是否显示
         aMap.setMyLocationEnabled(true);// 设置为true表示显示定位层并可触发定位，false表示隐藏定位层并不可触发定位，默认是false
+        aMap.setMyLocationStyle(myLocationStyle);
+    }
+
+    /**
+     * 设置UI控件
+     */
+    private void UiSetting() {
+        mUiSettings = aMap.getUiSettings();
+        mUiSettings.setScaleControlsEnabled(true);//比例尺
+        mUiSettings.setZoomControlsEnabled(false);//取消放大缩小的按钮
+        mUiSettings.setMyLocationButtonEnabled(true);// 设置默认定位按钮是否显示
     }
 
 
@@ -231,6 +245,7 @@ public class FallingMap extends AppCompatActivity implements LocationSource,
 
     @Override
     public void onDriveRouteSearched(DriveRouteResult result, int errorCode) {
+        mBottomLayout.setVisibility(View.VISIBLE);
         aMap.clear();// 清理地图上的所有覆盖物
         if (errorCode == 1000) {
             if (result != null && result.getPaths() != null) {
@@ -246,27 +261,16 @@ public class FallingMap extends AppCompatActivity implements LocationSource,
                     drivingRouteOverlay.addToMap();
                     drivingRouteOverlay.zoomToSpan();
 
-                    //mBottomLayout.setVisibility(View.VISIBLE);
+                    mBottomLayout.setVisibility(View.VISIBLE);
                     int dis = (int) drivePath.getDistance();
                     int dur = (int) drivePath.getDuration();
-                    //String des = AMapUtil.getFriendlyTime(dur)+"("+AMapUtil.getFriendlyLength(dis)+")";
-                    //mRotueTimeDes.setText(des);
+                    String des = StringUtil.getFriendlyTime(dur)+"("+ StringUtil.getFriendlyLength(dis)+")";
+                    mRouteTimeDes.setText(des);//显示距离信息
 
-                    //mRouteDetailDes.setVisibility(View.VISIBLE);
-                    int taxiCost = (int) mDriveRouteResult.getTaxiCost();
-                    //mRouteDetailDes.setText("打车约"+taxiCost+"元");
 
-                    //mBottomLayout.setOnClickListener(new View.OnClickListener() {
-                      /*  @Override
-                        public void onClick(View v) {
-                            Intent intent = new Intent(mContext,
-                                    DriveRouteDetailActivity.class);
-                            intent.putExtra("drive_path", drivePath);
-                            intent.putExtra("drive_result",
-                                    mDriveRouteResult);
-                            startActivity(intent);
-                        }
-                    });*/
+
+
+
                 } else if (result.getPaths() == null) {
                     ToastUtil.show(this, R.string.no_result);
                 }
@@ -287,8 +291,6 @@ public class FallingMap extends AppCompatActivity implements LocationSource,
     @Override
     public void onMapClick(LatLng latLng) {
         mEndPoint = new LatLonPoint(latLng.latitude, latLng.longitude);
-        Log.i("J W ", latLng.latitude + " " + latLng.longitude);
         searchRouteResult();
-
     }
 }

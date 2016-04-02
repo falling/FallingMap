@@ -1,6 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.amap.api.maps2d.MapView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/map"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent" />
+
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+    <com.amap.api.maps2d.MapView
+        android:id="@+id/map"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+    </com.amap.api.maps2d.MapView>
+
+    <RelativeLayout
+        android:id="@+id/bottom_layout"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_layout_height"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:background="@drawable/bg_bottom_bar"
+        android:gravity="center_vertical"
+        android:padding="@dimen/bottom_layout_padding"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/distance"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="12dp"
+            android:gravity="center"
+            android:singleLine="true"
+            android:textColor="@color/textColor"
+            android:textSize="@dimen/text_size_distance"/>
+
+        <LinearLayout
+            android:id="@+id/detail"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="@dimen/bottom_end_margin"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:text="@string/more"
+                android:textColor="@color/blue"
+                android:textSize="@dimen/text_size_more"/>
+
+            <Button
+                android:layout_width="@dimen/button_more_width"
+                android:layout_height="@dimen/button_more_height"
+                android:layout_marginStart="@dimen/button_more_margin"
+                android:background="@drawable/arrow_right_blue"
+                android:gravity="center_vertical"/>
+        </LinearLayout>
+    </RelativeLayout>
+
+
+</RelativeLayout>

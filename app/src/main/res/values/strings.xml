@@ -151,5 +151,6 @@
     <string name="report_time">发布时间</string>
     <string name="sydney">悉尼</string>
     <string name="beijing">北京</string>
+    <string name="more">详情</string>
 
 </resources>
