@@ -1,6 +1,7 @@
 package com.example.falling.fallingmap;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
@@ -9,6 +10,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
 import android.widget.Toast;
 
 import com.amap.api.location.AMapLocation;
@@ -16,21 +19,38 @@ import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps2d.AMap;
+import com.amap.api.maps2d.CameraUpdateFactory;
 import com.amap.api.maps2d.LocationSource;
 import com.amap.api.maps2d.MapView;
+import com.amap.api.maps2d.UiSettings;
 import com.amap.api.maps2d.model.BitmapDescriptorFactory;
+import com.amap.api.maps2d.model.LatLng;
 import com.amap.api.maps2d.model.MyLocationStyle;
+import com.amap.api.maps2d.overlay.DrivingRouteOverlay;
+import com.amap.api.services.core.LatLonPoint;
+import com.amap.api.services.route.BusRouteResult;
+import com.amap.api.services.route.DrivePath;
+import com.amap.api.services.route.DriveRouteResult;
+import com.amap.api.services.route.RouteSearch;
+import com.amap.api.services.route.WalkRouteResult;
+import com.example.falling.fallingmap.util.ToastUtil;
 
 public class FallingMap extends AppCompatActivity implements LocationSource,
-        AMapLocationListener {
+        AMapLocationListener, RouteSearch.OnRouteSearchListener, AMap.OnMapClickListener {
 
-    private static final int WRITE_EXTERNAL_STORAGE_REQUEST_CODE = 1;
-    private static final int ACCESS_FINE_LOCATION_REQUEST_CODE = 2;
+    private static final int PERMISSION = 1;
     private MapView mapView;
     private AMap aMap;
     private OnLocationChangedListener mListener;
     private AMapLocationClient mlocationClient;
     private AMapLocationClientOption mLocationOption;
+    private UiSettings mUiSettings;
+    private RouteSearch mRouteSearch;
+    private DriveRouteResult mDriveRouteResult;
+
+    private LatLonPoint mStartPoint;
+    private LatLonPoint mEndPoint;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,12 +68,9 @@ public class FallingMap extends AppCompatActivity implements LocationSource,
                 ) {
             //申请权限
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_FINE_LOCATION},
-                    WRITE_EXTERNAL_STORAGE_REQUEST_CODE);
+                    PERMISSION);
         } else {
-            init();
-            aMap.setLocationSource(this);// 设置定位监听
-            aMap.getUiSettings().setMyLocationButtonEnabled(true);// 设置默认定位按钮是否显示
-            aMap.setMyLocationEnabled(true);// 设置为true表示显示定位层并可触发定位，false表示隐藏定位层并不可触发定位，默认是false
+            permissionGranted();
         }
     }
 
@@ -61,22 +78,28 @@ public class FallingMap extends AppCompatActivity implements LocationSource,
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
-            case WRITE_EXTERNAL_STORAGE_REQUEST_CODE:
+            case PERMISSION:
                 if (grantResults[1] == PackageManager.PERMISSION_GRANTED) {
                     // Permission Granted
-                    init();
-                    aMap.setLocationSource(this);// 设置定位监听
-                    aMap.getUiSettings().setMyLocationButtonEnabled(true);// 设置默认定位按钮是否显示
-                    aMap.setMyLocationEnabled(true);// 设置为true表示显示定位层并可触发定位，false表示隐藏定位层并不可触发定位，默认是false
+                    permissionGranted();
 
                 } else {
                     // Permission Denied
-                    Toast.makeText(this, R.string.permission_error,Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, R.string.permission_error, Toast.LENGTH_LONG).show();
 
                 }
                 break;
 
         }
+    }
+
+    private void permissionGranted() {
+        init();
+        mRouteSearch.setRouteSearchListener(this);
+        aMap.setLocationSource(this);// 设置定位监听
+        aMap.setOnMapClickListener(this);
+        aMap.getUiSettings().setMyLocationButtonEnabled(true);// 设置默认定位按钮是否显示
+        aMap.setMyLocationEnabled(true);// 设置为true表示显示定位层并可触发定位，false表示隐藏定位层并不可触发定位，默认是false
     }
 
     /**
@@ -86,6 +109,9 @@ public class FallingMap extends AppCompatActivity implements LocationSource,
         if (aMap == null) {
             aMap = mapView.getMap();
             setUpMap();
+            mUiSettings = aMap.getUiSettings();
+            mUiSettings.setScaleControlsEnabled(true);
+            mRouteSearch = new RouteSearch(this);
         }
 
     }
@@ -137,6 +163,7 @@ public class FallingMap extends AppCompatActivity implements LocationSource,
     public void onLocationChanged(AMapLocation aMapLocation) {
         if (mListener != null && aMapLocation != null) {
             if (aMapLocation.getErrorCode() == 0) {
+                mStartPoint = new LatLonPoint(aMapLocation.getLatitude(), aMapLocation.getLongitude());//起点，
                 mListener.onLocationChanged(aMapLocation);// 显示系统小蓝点
             } else {
                 String errText = "定位失败," + aMapLocation.getErrorCode() + ": " + aMapLocation.getErrorInfo();
@@ -175,4 +202,93 @@ public class FallingMap extends AppCompatActivity implements LocationSource,
         mlocationClient = null;
     }
 
+
+    /**
+     * 开始搜索路径规划方案
+     */
+    public void searchRouteResult() {
+        if (mStartPoint == null) {
+            Toast.makeText(this, "定位中，稍后再试...", Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (mEndPoint == null) {
+            Toast.makeText(this, "终点未设置", Toast.LENGTH_LONG).show();
+            return;
+        }
+        final RouteSearch.FromAndTo fromAndTo = new RouteSearch.FromAndTo(
+                mStartPoint, mEndPoint);
+
+        RouteSearch.DriveRouteQuery query = new RouteSearch.DriveRouteQuery(fromAndTo, RouteSearch.DrivingDefault, null,
+                null, "");// 第一个参数表示路径规划的起点和终点，第二个参数表示驾车模式，第三个参数表示途经点，第四个参数表示避让区域，第五个参数表示避让道路
+        mRouteSearch.calculateDriveRouteAsyn(query);// 异步路径规划驾车模式查询
+    }
+
+
+    @Override
+    public void onBusRouteSearched(BusRouteResult busRouteResult, int i) {
+
+    }
+
+    @Override
+    public void onDriveRouteSearched(DriveRouteResult result, int errorCode) {
+        aMap.clear();// 清理地图上的所有覆盖物
+        if (errorCode == 1000) {
+            if (result != null && result.getPaths() != null) {
+                if (result.getPaths().size() > 0) {
+                    mDriveRouteResult = result;
+                    final DrivePath drivePath = mDriveRouteResult.getPaths()
+                            .get(0);
+                    DrivingRouteOverlay drivingRouteOverlay = new DrivingRouteOverlay(
+                            this, aMap, drivePath,
+                            mDriveRouteResult.getStartPos(),
+                            mDriveRouteResult.getTargetPos());
+                    drivingRouteOverlay.removeFromMap();
+                    drivingRouteOverlay.addToMap();
+                    drivingRouteOverlay.zoomToSpan();
+
+                    //mBottomLayout.setVisibility(View.VISIBLE);
+                    int dis = (int) drivePath.getDistance();
+                    int dur = (int) drivePath.getDuration();
+                    //String des = AMapUtil.getFriendlyTime(dur)+"("+AMapUtil.getFriendlyLength(dis)+")";
+                    //mRotueTimeDes.setText(des);
+
+                    //mRouteDetailDes.setVisibility(View.VISIBLE);
+                    int taxiCost = (int) mDriveRouteResult.getTaxiCost();
+                    //mRouteDetailDes.setText("打车约"+taxiCost+"元");
+
+                    //mBottomLayout.setOnClickListener(new View.OnClickListener() {
+                      /*  @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(mContext,
+                                    DriveRouteDetailActivity.class);
+                            intent.putExtra("drive_path", drivePath);
+                            intent.putExtra("drive_result",
+                                    mDriveRouteResult);
+                            startActivity(intent);
+                        }
+                    });*/
+                } else if (result.getPaths() == null) {
+                    ToastUtil.show(this, R.string.no_result);
+                }
+
+            } else {
+                ToastUtil.show(this, R.string.no_result);
+            }
+        } else {
+            ToastUtil.showerror(this.getApplicationContext(), errorCode);
+        }
+    }
+
+    @Override
+    public void onWalkRouteSearched(WalkRouteResult walkRouteResult, int i) {
+
+    }
+
+    @Override
+    public void onMapClick(LatLng latLng) {
+        mEndPoint = new LatLonPoint(latLng.latitude, latLng.longitude);
+        Log.i("J W ", latLng.latitude + " " + latLng.longitude);
+        searchRouteResult();
+
+    }
 }
