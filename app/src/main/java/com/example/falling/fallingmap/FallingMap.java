@@ -105,6 +105,7 @@ public class FallingMap extends AppCompatActivity implements LocationSource,
         mRouteSearch.setRouteSearchListener(this);
         aMap.setLocationSource(this);// 设置定位监听
         aMap.setOnMapClickListener(this);//设置地图点击监听
+        Toast.makeText(this, R.string.gettingLocation,Toast.LENGTH_LONG).show();
     }
 
     /**
@@ -239,6 +240,11 @@ public class FallingMap extends AppCompatActivity implements LocationSource,
 
     }
 
+    /**
+     * 显示路线规划
+     * @param result
+     * @param errorCode
+     */
     @Override
     public void onDriveRouteSearched(DriveRouteResult result, int errorCode) {
         mBottomLayout.setVisibility(View.VISIBLE);

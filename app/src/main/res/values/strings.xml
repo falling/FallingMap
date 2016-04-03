@@ -154,5 +154,6 @@
     <string name="more">详情</string>
     <string name="dir_start">出发</string>
     <string name="dir_end">到达终点</string>
+    <string name="gettingLocation">定位中...</string>
 
 </resources>
