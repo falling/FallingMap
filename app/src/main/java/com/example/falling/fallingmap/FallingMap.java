@@ -105,7 +105,7 @@ public class FallingMap extends AppCompatActivity implements LocationSource,
         mRouteSearch.setRouteSearchListener(this);
         aMap.setLocationSource(this);// 设置定位监听
         aMap.setOnMapClickListener(this);//设置地图点击监听
-        Toast.makeText(this, R.string.gettingLocation,Toast.LENGTH_LONG).show();
+        Toast.makeText(this, R.string.gettingLocation, Toast.LENGTH_LONG).show();
     }
 
     /**
@@ -242,6 +242,7 @@ public class FallingMap extends AppCompatActivity implements LocationSource,
 
     /**
      * 显示路线规划
+     *
      * @param result
      * @param errorCode
      */
@@ -250,43 +251,35 @@ public class FallingMap extends AppCompatActivity implements LocationSource,
         mBottomLayout.setVisibility(View.VISIBLE);
         aMap.clear();// 清理地图上的所有覆盖物
         if (errorCode == 1000) {
-            if (result != null && result.getPaths() != null) {
-                if (result.getPaths().size() > 0) {
-                    mDriveRouteResult = result;
-                    final DrivePath drivePath = mDriveRouteResult.getPaths()
-                            .get(0);
-                    DrivingRouteOverlay drivingRouteOverlay = new DrivingRouteOverlay(
-                            this, aMap, drivePath,
-                            mDriveRouteResult.getStartPos(),
-                            mDriveRouteResult.getTargetPos());
-                    drivingRouteOverlay.removeFromMap();
-                    drivingRouteOverlay.addToMap();
-                    drivingRouteOverlay.zoomToSpan();
+            if (result != null && result.getPaths() != null && result.getPaths().size() > 0) {
+                mDriveRouteResult = result;
+                final DrivePath drivePath = mDriveRouteResult.getPaths()
+                        .get(0);
+                DrivingRouteOverlay drivingRouteOverlay = new DrivingRouteOverlay(
+                        this, aMap, drivePath,
+                        mDriveRouteResult.getStartPos(),
+                        mDriveRouteResult.getTargetPos());
+                drivingRouteOverlay.removeFromMap();
+                drivingRouteOverlay.addToMap();
+                drivingRouteOverlay.zoomToSpan();
 
-                    mBottomLayout.setVisibility(View.VISIBLE);
-                    int dis = (int) drivePath.getDistance();
-                    int dur = (int) drivePath.getDuration();
-                    String des = StringUtil.getFriendlyTime(dur)+"("+ StringUtil.getFriendlyLength(dis)+")";
-                    mRouteTimeDes.setText(des);//显示距离信息
+                mBottomLayout.setVisibility(View.VISIBLE);
+                int dis = (int) drivePath.getDistance();
+                int dur = (int) drivePath.getDuration();
+                String des = StringUtil.getFriendlyTime(dur) + "(" + StringUtil.getFriendlyLength(dis) + ")";
+                mRouteTimeDes.setText(des);//显示距离信息
 
-                    mBottomLayout.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Intent intent = new Intent(v.getContext(),
-                                    DriveRouteDetailActivity.class);
-                            intent.putExtra("drive_path", drivePath);
-                            intent.putExtra("drive_result",
-                                    mDriveRouteResult);
-                            startActivity(intent);
-                        }
-                    });
-
-
-
-                } else if (result.getPaths() == null) {
-                    ToastUtil.show(this, R.string.no_result);
-                }
-
+                mBottomLayout.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(v.getContext(),
+                                DriveRouteDetailActivity.class);
+                        intent.putExtra("drive_path", drivePath);
+                        intent.putExtra("drive_result",
+                                mDriveRouteResult);
+                        startActivity(intent);
+                    }
+                });
             } else {
                 ToastUtil.show(this, R.string.no_result);
             }
