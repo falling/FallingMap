@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white" >
+
+    <ImageView
+        android:id="@+id/bus_seg_split_line"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/image_height_small"
+        android:layout_marginStart="@dimen/image_margin"
+        android:background="@color/line_color"/>
+
+    <RelativeLayout
+        android:id="@+id/bus_route_direction"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/layout_height"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="@dimen/layout_margin_small" >
+
+        <ImageView
+            android:id="@+id/bus_dir_icon"
+            android:layout_width="@dimen/image_height_big"
+            android:layout_height="@dimen/image_height_big"
+            android:layout_centerVertical="true"
+            android:src="@drawable/dir_start" />
+
+        <ImageView
+            android:id="@+id/bus_dir_icon_up"
+            android:layout_width="@dimen/image_height_small"
+            android:layout_height="match_parent"
+            android:layout_above="@id/bus_dir_icon"
+            android:layout_centerHorizontal="true"
+            android:background="@color/image_background_dark"
+            android:visibility="gone"/>
+
+        <ImageView
+            android:id="@+id/bus_dir_icon_down"
+            android:layout_width="@dimen/image_height_small"
+            android:layout_height="match_parent"
+            android:layout_below="@id/bus_dir_icon"
+            android:layout_centerHorizontal="true"
+            android:background="@color/image_background_dark"
+            android:visibility="gone"/>
+    </RelativeLayout>
+    
+    <RelativeLayout
+        android:id="@+id/bus_item"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/layout_height" >
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true">
+
+            <ImageView
+                android:id="@+id/bus_expand_image"
+                android:layout_width="@dimen/image_width_big"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/image_end_margin"
+                android:clickable="true"
+                android:scaleType="centerInside"
+                android:src="@drawable/down"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/bus_station_num"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_centerVertical="true"
+                android:layout_toStartOf="@id/bus_expand_image"
+                android:gravity="center_vertical"
+                android:textColor="@color/blue"
+                android:textSize="@dimen/text_size_med"
+                android:visibility="gone" >
+            </TextView>
+        </RelativeLayout>
+        <TextView
+            android:id="@+id/bus_line_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/text_view_margin_big"
+            android:textColor="@color/textColor"
+            android:text="@string/dir_start"
+            android:textSize="@dimen/text_size_med" />
+    </RelativeLayout>
+    <LinearLayout
+        android:id="@+id/expand_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/bus_item"
+        android:orientation="vertical">
+    </LinearLayout>
+</RelativeLayout>
