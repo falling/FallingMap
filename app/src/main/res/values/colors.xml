@@ -5,4 +5,12 @@
     <color name="colorAccent">#FF4081</color>
     <color name="blue">#4c90f9</color>
     <color name="textColor">#333333</color>
+    <color name="textColor_light">#999999</color>
+    <color name="phone_bg">#f6f6f6</color>
+    <color name="black">#000000</color>
+    <color name="transparent">#00000000</color>
+    <color name="image_background_light">#e0e0e0</color>
+    <color name="image_background_dark">#b6b6b6</color>
+    <color name="white">#ffffff</color>
+    <color name="line_color">#e0e0e0</color>
 </resources>

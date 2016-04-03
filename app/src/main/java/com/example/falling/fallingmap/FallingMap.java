@@ -1,6 +1,7 @@
 package com.example.falling.fallingmap;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
@@ -42,9 +43,7 @@ public class FallingMap extends AppCompatActivity implements LocationSource,
     private MapView mapView;
     private AMap aMap;
     private OnLocationChangedListener mListener;
-    private AMapLocationClient mlocationClient;
-    private AMapLocationClientOption mLocationOption;
-    private UiSettings mUiSettings;
+    private AMapLocationClient mLocationClient;
     private RouteSearch mRouteSearch;
     private DriveRouteResult mDriveRouteResult;
 
@@ -141,10 +140,10 @@ public class FallingMap extends AppCompatActivity implements LocationSource,
      * 设置UI控件
      */
     private void UiSetting() {
-        mUiSettings = aMap.getUiSettings();
-        mUiSettings.setScaleControlsEnabled(true);//比例尺
-        mUiSettings.setZoomControlsEnabled(false);//取消放大缩小的按钮
-        mUiSettings.setMyLocationButtonEnabled(true);// 设置默认定位按钮是否显示
+        UiSettings uiSettings = aMap.getUiSettings();
+        uiSettings.setScaleControlsEnabled(true);//比例尺
+        uiSettings.setZoomControlsEnabled(false);//取消放大缩小的按钮
+        uiSettings.setMyLocationButtonEnabled(true);// 设置默认定位按钮是否显示
     }
 
 
@@ -170,7 +169,7 @@ public class FallingMap extends AppCompatActivity implements LocationSource,
     protected void onDestroy() {
         super.onDestroy();
         mapView.onDestroy();
-        mlocationClient.onDestroy();
+        mLocationClient.onDestroy();
     }
 
     @Override
@@ -189,31 +188,28 @@ public class FallingMap extends AppCompatActivity implements LocationSource,
     @Override
     public void activate(OnLocationChangedListener listener) {
         mListener = listener;
-        if (mlocationClient == null) {
-            mlocationClient = new AMapLocationClient(this);
-            mLocationOption = new AMapLocationClientOption();
+        if (mLocationClient == null) {
+            mLocationClient = new AMapLocationClient(this);
+            AMapLocationClientOption locationOption = new AMapLocationClientOption();
             //设置定位监听
-            mlocationClient.setLocationListener(this);
+            mLocationClient.setLocationListener(this);
             //设置为高精度定位模式
-            mLocationOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
+            locationOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
             //设置定位参数
-            mlocationClient.setLocationOption(mLocationOption);
-            // 此方法为每隔固定时间会发起一次定位请求，为了减少电量消耗或网络流量消耗，
-            // 注意设置合适的定位时间的间隔（最小间隔支持为2000ms），并且在合适时间调用stopLocation()方法来取消定位请求
-            // 在定位结束后，在合适的生命周期调用onDestroy()方法
-            // 在单次定位情况下，定位无论成功与否，都无需调用stopLocation()方法移除请求，定位sdk内部会移除
-            mlocationClient.startLocation();
+            mLocationClient.setLocationOption(locationOption);
+
+            mLocationClient.startLocation();
         }
     }
 
     @Override
     public void deactivate() {
         mListener = null;
-        if (mlocationClient != null) {
-            mlocationClient.stopLocation();
-            mlocationClient.onDestroy();
+        if (mLocationClient != null) {
+            mLocationClient.stopLocation();
+            mLocationClient.onDestroy();
         }
-        mlocationClient = null;
+        mLocationClient = null;
     }
 
 
@@ -267,7 +263,17 @@ public class FallingMap extends AppCompatActivity implements LocationSource,
                     String des = StringUtil.getFriendlyTime(dur)+"("+ StringUtil.getFriendlyLength(dis)+")";
                     mRouteTimeDes.setText(des);//显示距离信息
 
-
+                    mBottomLayout.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(v.getContext(),
+                                    DriveRouteDetailActivity.class);
+                            intent.putExtra("drive_path", drivePath);
+                            intent.putExtra("drive_result",
+                                    mDriveRouteResult);
+                            startActivity(intent);
+                        }
+                    });
 
 
 
