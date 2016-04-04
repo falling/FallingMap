@@ -80,7 +80,6 @@ public class FallingMapActivity extends AppCompatActivity implements LocationSou
         }
     }
 
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {

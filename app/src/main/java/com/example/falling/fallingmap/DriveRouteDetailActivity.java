@@ -32,7 +32,7 @@ public class DriveRouteDetailActivity extends Activity {
 		mTitle = (TextView) findViewById(R.id.title_center);
 		mTitleDriveRoute = (TextView) findViewById(R.id.firstline);
 		mDesDriveRoute = (TextView) findViewById(R.id.secondline);
-		mTitle.setText("驾车路线详情");
+		mTitle.setText(R.string.DriveDetailsTitle);
 		String dur = StringUtil.getFriendlyTime((int) mDrivePath.getDuration());
 		String dis = StringUtil.getFriendlyLength((int) mDrivePath
 				.getDistance());
