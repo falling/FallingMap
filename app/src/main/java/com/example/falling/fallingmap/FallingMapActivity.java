@@ -36,7 +36,7 @@ import com.amap.api.services.route.WalkRouteResult;
 import com.example.falling.fallingmap.util.StringUtil;
 import com.example.falling.fallingmap.util.ToastUtil;
 
-public class FallingMap extends AppCompatActivity implements LocationSource,
+public class FallingMapActivity extends AppCompatActivity implements LocationSource,
         AMapLocationListener, RouteSearch.OnRouteSearchListener, AMap.OnMapClickListener {
 
     private static final int PERMISSION = 1;

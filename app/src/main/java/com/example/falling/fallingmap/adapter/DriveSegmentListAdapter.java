@@ -1,4 +1,4 @@
-package com.example.falling.fallingmap;
+package com.example.falling.fallingmap.adapter;
 
 import android.content.Context;
 import android.view.View;
@@ -8,6 +8,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.amap.api.services.route.DriveStep;
+import com.example.falling.fallingmap.R;
+import com.example.falling.fallingmap.util.IDutil;
 import com.example.falling.fallingmap.util.StringUtil;
 
 import java.util.ArrayList;
@@ -87,7 +89,7 @@ public class DriveSegmentListAdapter extends BaseAdapter {
 			return convertView;
 		} else {
 			String actionName = item.getAction();
-			int resID = StringUtil.getDriveActionID(actionName);
+			int resID = IDutil.getDriveActionID(actionName);
 			holder.driveDirIcon.setImageResource(resID);
 			holder.driveLineName.setText(item.getInstruction());
 			holder.driveDirUp.setVisibility(View.VISIBLE);

@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import com.amap.api.services.route.DrivePath;
 import com.amap.api.services.route.DriveRouteResult;
+import com.example.falling.fallingmap.adapter.DriveSegmentListAdapter;
 import com.example.falling.fallingmap.util.StringUtil;
 
 
@@ -23,7 +24,6 @@ public class DriveRouteDetailActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_route_detail);
-
 		getIntentData();
 		init();
 	}
